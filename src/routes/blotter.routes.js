@@ -1,43 +1,17 @@
 import express from "express";
-import asyncHandler from "../utils/asyncHandler.js";
+// Don't forget to import the NEW function
 import {
-  submitBlotter,
-  getBlotters,
-  trackBlotter,
-  deleteBlotter,
+  createBlotter,
+  getAllBlotters,
+  getUserBlotters,
 } from "../controllers/blotter.controller.js";
-import {
-  authMiddleware,
-  authorizeRoles,
-} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Submit a blotter
-router.post(
-  "/submit",
-  authMiddleware,
-  authorizeRoles("user", "admin"),
-  asyncHandler(submitBlotter)
-);
+router.post("/create", createBlotter);
+router.get("/getBlotters", getAllBlotters); // Pang admin guro ni
 
-// Get blotters
-router.get(
-  "/",
-  authMiddleware,
-  authorizeRoles("user", "admin"),
-  asyncHandler(getBlotters)
-);
-
-// Track a blotter by number
-router.get("/track/:number", authMiddleware, asyncHandler(trackBlotter));
-
-// Delete a blotter
-router.delete(
-  "/:id",
-  authMiddleware,
-  authorizeRoles("user", "admin"),
-  asyncHandler(deleteBlotter)
-);
+// Kani ang para sa Mobile App:
+router.get("/my-blotters/:userId", getUserBlotters);
 
 export default router;

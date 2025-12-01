@@ -61,7 +61,7 @@ const blotterSchema = new mongoose.Schema(
     attachments: { type: [attachmentSchema], default: [] },
 
     // Admin fields
-    assignedOfficer: { type: mongoose.Schema.Types.ObjectId, ref: "Officer" },
+    assigned_Officer: { type: mongoose.Schema.Types.ObjectId, ref: "Officer" },
     notes: { type: String, default: "" },
 
     policeStation: {
