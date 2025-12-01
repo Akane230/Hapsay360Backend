@@ -1,4 +1,5 @@
 import { User } from "../models/index.js";
+import bcrypt from "bcryptjs";
 
 /**
  * Get all users
@@ -157,6 +158,41 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Change Password
+ * @route PUT /api/users/:id/change-password
+ */
+export const changePassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect old password" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Change Password Error:", error);
+    res.status(500).json({
+      message: "Server error",
       error: error.message,
     });
   }
