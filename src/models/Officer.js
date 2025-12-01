@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { generateId } from '../lib/idGenerator.js';
 import bcrypt from 'bcryptjs';
 
 // Contact subdocument schema for officers
@@ -14,6 +15,11 @@ const officerContactSchema = new mongoose.Schema({
 }, { _id: false });
 
 const officerSchema = new mongoose.Schema({
+    custom_id: {
+        type: String,
+        unique: true,
+        default: () => generateId('OFF')
+    },
     email: {
         type: String,
         required: true,

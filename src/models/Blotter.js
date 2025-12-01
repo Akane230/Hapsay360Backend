@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateId } from "../lib/idGenerator.js";
 
 // Location subdocument
 const locationSchema = new mongoose.Schema(
@@ -50,6 +51,11 @@ const attachmentSchema = new mongoose.Schema(
 // Unified Blotter Schema
 const blotterSchema = new mongoose.Schema(
   {
+    custom_id: {
+      type: String,
+      unique: true,
+      default: () => generateId("BLT"),
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
