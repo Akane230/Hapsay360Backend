@@ -23,12 +23,16 @@ export const validateEmail = (email) => {
  */
 export const register = async (req, res) => {
   try {
-    const { given_name, middle_name, surname, email, password } = req.body;
+    // 1. Destructure all fields including phone_number
+    const { given_name, middle_name, surname, email, password, phone_number } =
+      req.body;
 
+    // 2. Validate all required fields
     if (!given_name || !middle_name || !surname || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message:
+          "Given name, middle name, surname, email, and password are required",
       });
     }
 
@@ -57,13 +61,19 @@ export const register = async (req, res) => {
 
     const profile_picture = `https://api.dicebear.com/7.x/avataaars/png?seed=${email}`;
 
-    // Create user
+    // 3. Create user with all fields mapped correctly
     const user = new User({
-      personal_info: { given_name, middle_name, surname },
+      personal_info: {
+        given_name,
+        middle_name,
+        surname,
+      },
       email,
       password,
+      phone_number: phone_number || "", // Ensure phone number is saved
       profile_picture: profile_picture,
     });
+
     await user.save();
 
     // Generate token
