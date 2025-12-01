@@ -1,17 +1,22 @@
 import mongoose from "mongoose";
-import { customAlphabet } from "nanoid";
+import { generateId } from "../lib/idGenerator.js";
 
-// Create a nanoid generator for custom_id
-const nanoid = customAlphabet(
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-  10
-);
-
+// Payment subdocument schema
 const paymentSchema = new mongoose.Schema(
   {
-    processor: { type: String, required: false },
-    transaction_id: { type: String, required: false },
-    status: { type: String, required: false },
+    processor: {
+      type: String,
+      required: false,
+    },
+    transaction_id: {
+      type: String,
+      required: false,
+    },
+    status: {
+      type: String,
+      required: false,
+      default: "pending",
+    },
   },
   { _id: false }
 );
