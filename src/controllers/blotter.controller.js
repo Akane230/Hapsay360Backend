@@ -54,7 +54,7 @@ export const createBlotter = async (req, res) => {
 
     const blotter = new Blotter({
       user_id: userId,
-      assigned_officer: officerId,
+      assigned_Officer: officerId,
       incident,
     });
 
@@ -81,7 +81,7 @@ export const getAllBlotters = async (req, res) => {
   try {
     const blotters = await Blotter.find()
       .populate("user_id", "-password")
-      .populate("assigned_officer", "-password");
+      .populate("assigned_Officer", "-password");
     res.status(200).json({
       success: true,
       count: blotters.length,
@@ -116,7 +116,7 @@ export const getUserBlotters = async (req, res) => {
         { userId: userId }, // Matches your existing test data
       ],
     })
-      .populate("assigned_officer", "first_name last_name") // Adjusted based on your officer model
+      .populate("assigned_Officer", "first_name last_name") // Adjusted based on your officer model
       .sort({ created_at: -1 });
 
     res.status(200).json({
