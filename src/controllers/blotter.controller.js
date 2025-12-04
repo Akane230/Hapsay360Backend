@@ -1,5 +1,6 @@
 import Blotter from "../models/Blotter.js";
 import User from "../models/User.js";
+import Officer from "../models/Officer.js";
 
 /**
  * @route POST /api/blotters
@@ -37,12 +38,14 @@ export const createBlotter = async (req, res) => {
       });
     }
 
-    const officer = await Officer.findById(officerId);
-    if (!officer) {
-      return res.status(404).json({
-        success: false,
-        message: "Officer not found",
-      });
+    if (officerId) {
+      const officer = await Officer.findById(officerId);
+      if (!officer) {
+        return res.status(404).json({
+          success: false,
+          message: "Officer not found",
+        });
+      }
     }
 
     const incident = {
@@ -75,13 +78,14 @@ export const createBlotter = async (req, res) => {
 
 /**
  * @route GET /api/blotters
- * Get all blotters using async/wait function
+ * Get all blotters using async/await function
  * */
 export const getAllBlotters = async (req, res) => {
   try {
     const blotters = await Blotter.find()
       .populate("user_id", "-password")
       .populate("assigned_Officer", "-password");
+    
     res.status(200).json({
       success: true,
       count: blotters.length,
@@ -97,25 +101,16 @@ export const getAllBlotters = async (req, res) => {
   }
 };
 
-// ... existing imports and functions
-
 /**
  * @route GET /api/blotters/user/:userId
  * Get blotters specific to a user
  */
-// controllers/blotter.controller.js
-
 export const getUserBlotters = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // SOLUTION: Look for user_id OR userId
-    const blotters = await Blotter.find({
-      $or: [
-        { userId: userId }, // Matches your existing test data
-      ],
-    })
-      .populate("assigned_Officer", "first_name last_name") // Adjusted based on your officer model
+    const blotters = await Blotter.find({ user_id: userId })
+      .populate("assigned_Officer", "first_name last_name")
       .sort({ created_at: -1 });
 
     res.status(200).json({

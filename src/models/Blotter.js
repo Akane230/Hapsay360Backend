@@ -48,7 +48,7 @@ const attachmentSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// Unified Blotter Schemay
+// Unified Blotter Schema
 const blotterSchema = new mongoose.Schema(
   {
     custom_id: {
@@ -56,7 +56,7 @@ const blotterSchema = new mongoose.Schema(
       unique: true,
       default: () => generateId("BLT"),
     },
-    userId: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -106,7 +106,7 @@ blotterSchema.pre("save", async function (next) {
 
 // Indexes for faster queries
 blotterSchema.index({ status: 1, created_at: -1 });
-blotterSchema.index({ userId: 1 });
+blotterSchema.index({ user_id: 1 });
 blotterSchema.index({ "reporter.contactNumber": 1 });
 
 const Blotter = mongoose.model("Blotter", blotterSchema);
