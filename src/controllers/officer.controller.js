@@ -161,3 +161,105 @@ export const deleteOfficer = async (req, res) => {
         });
     }
 }
+
+// Add these methods to your officer.controller.js
+
+export const getOfficerProfile = async (req, res) => {
+    try {
+        // Assuming you have authentication middleware that sets req.user
+        const officerId = req.user.id; // or req.user._id depending on your auth setup
+        
+        const officer = await Officer.findById(officerId)
+            .populate('station_id', 'name')
+            .select('-password'); // Exclude password from response
+
+        if (!officer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Officer not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: officer
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+export const updateOfficerProfile = async (req, res) => {
+    try {
+        // Assuming you have authentication middleware that sets req.user
+        const officerId = req.user.id; // or req.user._id depending on your auth setup
+        const { first_name, last_name, email, mobile_number, radio_id } = req.body;
+
+        if (!first_name || !last_name || !email) {
+            return res.status(400).json({
+                success: false,
+                message: 'First name, last name, and email are required'
+            });
+        }
+
+        if (!validateEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email format'
+            });
+        }
+
+        // Check if email is being changed and if it already exists for another officer
+        const officer = await Officer.findById(officerId);
+        if (!officer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Officer not found'
+            });
+        }
+
+        if (email !== officer.email) {
+            const existingOfficer = await Officer.findOne({ email });
+            if (existingOfficer) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email already exists'
+                });
+            }
+        }
+
+        // Update officer details
+        officer.first_name = first_name;
+        officer.last_name = last_name;
+        officer.email = email;
+        
+        // Update contact information
+        if (!officer.contact) {
+            officer.contact = {};
+        }
+        officer.contact.mobile_number = mobile_number || officer.contact.mobile_number;
+        officer.contact.radio_id = radio_id || officer.contact.radio_id;
+
+        const savedOfficer = await officer.save();
+        
+        // Remove password from response
+        const officerResponse = savedOfficer.toObject();
+        delete officerResponse.password;
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: officerResponse
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
