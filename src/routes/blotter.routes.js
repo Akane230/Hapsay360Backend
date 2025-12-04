@@ -4,6 +4,9 @@ import {
   createBlotter,
   getAllBlotters,
   getUserBlotters,
+  getBlotterAttachment, 
+  updateBlotter,
+  deleteBlotter
 } from "../controllers/blotter.controller.js";
 
 import {
@@ -16,8 +19,13 @@ const router = express.Router();
 // ADMIN ROUTES
 router.post("/create", authMiddleware, authorizeRoles("admin"), createBlotter);
 router.get("/getBlotters", authMiddleware, authorizeRoles("admin"), getAllBlotters);
+router.put("/update/:blotterId", authMiddleware, authorizeRoles("admin"), updateBlotter);
+router.delete("/delete/:blotterId", authMiddleware, authorizeRoles("admin"), deleteBlotter);
 
 // Kani ang para sa Mobile App:
 router.get("/my-blotters/:userId", getUserBlotters);
+
+//para ma kita image sa admin
+router.get('/:blotterId/attachments/:attachmentIndex', getBlotterAttachment);
 
 export default router;
