@@ -62,12 +62,20 @@ export const saveApplication = async (req, res) => {
         };
       }
 
-      // Sync only the fields that exist in User.address
+      // SAFE ADDRESS SYNC — prevents overwriting required fields
       if (address) {
-        user.address = {
-          ...user.address,
-          ...address,
-        };
+        const updatedAddress = { ...(user.address || {}) };
+
+        for (const key of Object.keys(address)) {
+          const value = address[key];
+
+          // Ignore empty or null fields to avoid validation errors
+          if (value !== "" && value !== null && value !== undefined) {
+            updatedAddress[key] = value;
+          }
+        }
+
+        user.address = updatedAddress;
       }
 
       await user.save();
