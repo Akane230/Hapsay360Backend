@@ -117,17 +117,35 @@ applicationProfileSchema.post("save", async function () {
       };
     }
 
-    // Sync ADDRESS
+    // Sync ADDRESS safely (avoid overwriting required fields with empty values)
     if (this.address) {
-      user.address = {
-        house_no: this.address.houseNo,
-        street: this.address.street,
-        city: this.address.city,
-        barangay: this.address.barangay,
-        postal_code: this.address.postalCode,
-        province: this.address.province,
-        country: this.address.country,
+      const updatedAddress = { ...(user.address?.toObject() || {}) };
+
+      const map = {
+        houseNo: "house_no",
+        street: "street",
+        city: "city",
+        barangay: "barangay",
+        postalCode: "postal_code",
+        province: "province",
+        country: "country",
       };
+
+      for (const key in map) {
+        const apiFieldValue = this.address[key];
+        const userField = map[key];
+
+        // only update if value is NOT empty
+        if (
+          apiFieldValue !== "" &&
+          apiFieldValue !== null &&
+          apiFieldValue !== undefined
+        ) {
+          updatedAddress[userField] = apiFieldValue;
+        }
+      }
+
+      user.address = updatedAddress;
     }
 
     await user.save();
