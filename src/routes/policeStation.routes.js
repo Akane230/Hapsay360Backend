@@ -5,6 +5,7 @@ import {
   generateStationsPdf,
   deletePoliceStation,
   updatePoliceStation,
+  getPoliceStations,
 } from "../controllers/policeStation.controller.js";
 import {
   authMiddleware,
@@ -12,6 +13,8 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+
+router.get("/", getPoliceStations);
 
 router.post(
   "/create",
