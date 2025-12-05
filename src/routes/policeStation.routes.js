@@ -4,6 +4,8 @@ import {
   getStations,
   generateStationsPdf,
   deletePoliceStation,
+  updatePoliceStation,
+  getPoliceStations,
 } from "../controllers/policeStation.controller.js";
 import {
   authMiddleware,
@@ -11,6 +13,8 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+
+router.get("/", getPoliceStations);
 
 router.post(
   "/create",
@@ -30,6 +34,12 @@ router.delete(
   authMiddleware,
   authorizeRoles("admin"),
   deletePoliceStation
+);
+router.put(
+  "/update/:id",
+  authMiddleware,
+  authorizeRoles("admin"),
+  updatePoliceStation
 );
 
 export default router;
