@@ -4,6 +4,7 @@ import {
   getStations,
   generateStationsPdf,
   deletePoliceStation,
+  updatePoliceStation,
 } from "../controllers/policeStation.controller.js";
 import {
   authMiddleware,
@@ -30,6 +31,12 @@ router.delete(
   authMiddleware,
   authorizeRoles("admin"),
   deletePoliceStation
+);
+router.put(
+  "/update/:id",
+  authMiddleware,
+  authorizeRoles("admin"),
+  updatePoliceStation
 );
 
 export default router;
