@@ -20,7 +20,6 @@ export const createOfficer = async (req, res) => {
             });
         }
 
-        // Check if email already exists
         const existingOfficer = await Officer.findOne({ email });
         if (existingOfficer) {
             return res.status(400).json({
