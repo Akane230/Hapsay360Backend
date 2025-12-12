@@ -3,12 +3,10 @@ import { validateEmail } from "./auth.controller.js";
 import bcrypt from 'bcryptjs';
 import 'pdfkit-table';
 
-// In officer.controller.js - update the createOfficer function
 export const createOfficer = async (req, res) => {
     try {
         const { first_name, last_name, email, role, station_id, mobile_number, status, password, is_admin } = req.body;
 
-        // Basic validation - adjust requirements based on user type
         if (!first_name || !last_name || !email || !role) {
             return res.status(400).json({
                 success: false,
@@ -131,10 +129,10 @@ export const updateOfficer = async (req, res) => {
         const { id } = req.params;
         const { first_name, last_name, email, role, station_id, mobile_number, status, password } = req.body;
 
-        if (!first_name || !last_name || !email || !role || !station_id || !mobile_number || !status) {
+        if (!first_name || !last_name || !email || !role) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'First name, last name, email, and role are required'
             });
         }
 
@@ -145,6 +143,17 @@ export const updateOfficer = async (req, res) => {
             });
         }
 
+        const isAdmin = role.toUpperCase() === "ADMIN";
+        
+        if (!isAdmin) {
+            if (!mobile_number || !station_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Mobile number and station are required for officers'
+                });
+            }
+        }
+
         const officer = await Officer.findById(id);
         if (!officer) {
             return res.status(404).json({
@@ -153,26 +162,92 @@ export const updateOfficer = async (req, res) => {
             });
         }
 
+        if (email !== officer.email) {
+            const existingOfficer = await Officer.findOne({ 
+                email, 
+                _id: { $ne: id }
+            });
+            if (existingOfficer) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email already exists'
+                });
+            }
+        }
+
         officer.first_name = first_name;
         officer.last_name = last_name;
         officer.email = email;
         officer.role = role;
-        officer.station_id = station_id;
-        officer.contact.mobile_number = mobile_number;
-        officer.status = status;
-        officer.password = password ? password : null;
+        officer.status = status || 'ACTIVE';
+
+        if (station_id) {
+            if (officer.station_id && officer.station_id.toString() !== station_id) {
+                await PoliceStation.findByIdAndUpdate(
+                    officer.station_id,
+                    { $pull: { officer_IDs: officer._id } }
+                );
+                const newStation = await PoliceStation.findByIdAndUpdate(
+                    station_id,
+                    { $push: { officer_IDs: officer._id } },
+                    { new: true }
+                );
+                if (!newStation) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Station not found'
+                    });
+                }
+            } else if (!officer.station_id && station_id) {
+                const station = await PoliceStation.findByIdAndUpdate(
+                    station_id,
+                    { $push: { officer_IDs: officer._id } },
+                    { new: true }
+                );
+                if (!station) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Station not found'
+                    });
+                }
+            }
+            officer.station_id = station_id;
+        } else if (officer.station_id && isAdmin) {
+            await PoliceStation.findByIdAndUpdate(
+                officer.station_id,
+                { $pull: { officer_IDs: officer._id } }
+            );
+            officer.station_id = undefined;
+        }
+
+        if (!officer.contact) {
+            officer.contact = {};
+        }
+        
+        if (mobile_number !== undefined) {
+            officer.contact.mobile_number = mobile_number;
+        }
+
+        if (password && password.trim() !== "") {
+            officer.password = password;
+        }
 
         const savedOfficer = await officer.save();
+        
+        const officerResponse = savedOfficer.toObject();
+        delete officerResponse.password;
+
         res.status(200).json({
             success: true,
             message: 'Officer updated successfully',
-            officer: savedOfficer
+            officer: officerResponse
         });
     } catch (error) {
-        console.error(error);
+        console.error('Update officer error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error',
+            error: error.message
         });
     }
 };
