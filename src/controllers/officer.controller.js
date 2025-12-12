@@ -4,7 +4,7 @@ import 'pdfkit-table';
 
 export const createOfficer = async (req, res) => {
     try {
-        const { first_name, last_name, email, role, station_id, mobile_number, status } = req.body;
+        const { first_name, last_name, email, role, station_id, mobile_number, status, password } = req.body;
 
         if (!first_name || !last_name || !email || !role || !station_id || !mobile_number) {
             return res.status(400).json({
@@ -32,6 +32,7 @@ export const createOfficer = async (req, res) => {
             first_name,
             last_name,
             email,
+            password: password? password : null,
             role,
             station_id,
             contact: {
